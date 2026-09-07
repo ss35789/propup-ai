@@ -34,23 +34,27 @@
             <h3 class="text-lg font-semibold text-white mb-2">선착순 20개사 한정 베타 오픈 (50% 할인)</h3>
             <p class="text-sm text-slate-400 mb-6">사전 예약 신청 시 정식 출시 시 14일 무료 체험을 제공합니다.</p>
             
-            <form onsubmit="handlePreOrder(event)" class="space-y-4">
-                <input type="text" id="companyName" placeholder="회사명 (예: OO소프트)" required 
-                    class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
-                
-                <input type="email" id="email" placeholder="대표 또는 담당자 이메일" required 
-                    class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
-                
-                <select id="plan" class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-blue-500">
-                    <option value="Pro">Pro 플랜 (월 149,000원 -> 사전예약 69,000원)</option>
-                    <option value="Enterprise">Enterprise 플랜 (맞춤형 구축형 문의)</option>
-                </select>
+            <!-- index.html의 <form> 태그를 아래와 같이 수정 -->
+<form action="https://api.web3forms.com/submit" method="POST" class="space-y-4">
+    <!-- 발급받은 Access Key 입력 -->
+    <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE">
+    <input type="hidden" name="subject" value="[PropUp AI] 새로운 사전 예약 신청!">
 
-                <button type="submit" 
-                    class="w-full py-3.5 px-6 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition duration-200 shadow-lg shadow-blue-600/30">
-                    사전 예약 및 무료 체험 신청하기
-                </button>
-            </form>
+    <input type="text" name="company" placeholder="회사명 (예: OO소프트)" required 
+        class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white">
+    
+    <input type="email" name="email" placeholder="대표 또는 담당자 이메일" required 
+        class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white">
+    
+    <select name="plan" class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white">
+        <option value="Pro">Pro 플랜</option>
+        <option value="Enterprise">Enterprise 플랜</option>
+    </select>
+
+    <button type="submit" class="w-full py-3.5 px-6 rounded-lg bg-blue-600 text-white font-bold">
+        사전 예약 및 무료 체험 신청하기
+    </button>
+</form>
         </div>
     </section>
 
