@@ -258,9 +258,10 @@
   function buildProxyUrls(targetUrl){
     const enc = encodeURIComponent(targetUrl);
     return [
-      'https://corsproxy.io/?url=' + enc,
+      // corsproxy.io는 현재 API 키 없이는 401을 반환하므로 제외
+      'https://api.codetabs.com/v1/proxy?quest=' + enc,
       'https://api.allorigins.win/raw?url=' + enc,
-      'https://api.codetabs.com/v1/proxy?quest=' + enc
+      'https://thingproxy.freeboard.io/fetch/' + targetUrl
     ];
   }
 
