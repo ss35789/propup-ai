@@ -1,31 +1,630 @@
-<form action="https://api.web3forms.com/submit" method="POST" class="space-y-4">
-    <input type="hidden" name="access_key" value="ab4692f5-77e5-47c2-83bb-ec1c568985f1">
-    <input type="hidden" name="subject" value="[PropUp AI] 새로운 사전 예약 신청!">
-    <input type="hidden" name="from_name" value="PropUp AI Landing">
-    <input type="hidden" name="redirect" value="https://ss35789.github.io/propup-ai/">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>랜덤워크 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0C10;
+    --panel: #11141B;
+    --panel-2: #14171F;
+    --grid: #1E232D;
+    --grid-strong: #2A3140;
+    --text: #E7E9EE;
+    --text-dim: #838B9C;
+    --text-faint: #545C6C;
+    --amber: #E8B84B;
+    --amber-dim: #7A6430;
+    --blue: #6FA0D8;
+    --blue-dim: #3A4E68;
+    --up: #7FB88A;
+    --down: #C97B6B;
+    --radius: 14px;
+  }
 
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans KR', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body{
+    min-height: 100vh;
+    display:flex;
+    justify-content:center;
+    padding: 48px 20px 64px;
+    background-image:
+      radial-gradient(circle at 18% 8%, rgba(232,184,75,0.05), transparent 45%),
+      radial-gradient(circle at 82% 92%, rgba(111,160,216,0.05), transparent 45%);
+  }
+
+  .wrap{
+    width: 100%;
+    max-width: 900px;
+  }
+
+  header{
+    margin-bottom: 28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  h1{
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  header p{
+    margin:0;
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 46ch;
+  }
+
+  .readout{
+    font-family: 'IBM Plex Mono', monospace;
+    text-align: right;
+    font-size: 12px;
+    color: var(--text-faint);
+    line-height: 1.8;
+  }
+  .readout b{
+    color: var(--amber);
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  .panel{
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--grid-strong);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+
+  .scope{
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--grid);
+    background: #090B0F;
+  }
+
+  canvas{
+    display:block;
+    width: 100%;
+    height: 360px;
+  }
+
+  .scope::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.012),
+      rgba(255,255,255,0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+
+  .stats{
+    display:flex;
+    gap: 28px;
+    padding: 14px 4px 4px;
+    flex-wrap: wrap;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .stat{
+    display:flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .stat .label{
+    font-size: 10.5px;
+    color: var(--text-faint);
+    letter-spacing: 0.02em;
+  }
+  .stat .value{
+    font-size: 17px;
+    color: var(--text);
+  }
+  .stat .value.pos{ color: var(--up); }
+  .stat .value.neg{ color: var(--down); }
+  .stat .value.amber{ color: var(--amber); }
+
+  .controls{
+    margin-top: 22px;
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px 28px;
+  }
+
+  @media (max-width: 640px){
+    .controls{ grid-template-columns: 1fr; }
+    .stats{ gap: 20px; }
+  }
+
+  .field label{
+    display:flex;
+    justify-content:space-between;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .field label span.val{
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--amber);
+  }
+
+  input[type="range"]{
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--grid-strong);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: 2px solid #0A0C10;
+    box-shadow: 0 0 0 1px var(--amber-dim);
+    cursor: pointer;
+    margin-top: -6px;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: 2px solid #0A0C10;
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-track{
+    height: 2px;
+    background: var(--grid-strong);
+  }
+
+  .actions{
+    margin-top: 24px;
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  button{
+    font-family: 'IBM Plex Sans KR', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 11px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--grid-strong);
+    background: var(--panel-2);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  button:hover{ border-color: var(--text-faint); }
+  button:active{ transform: translateY(1px); }
+
+  button.primary{
+    background: var(--amber);
+    border-color: var(--amber);
+    color: #1A1305;
+  }
+  button.primary:hover{
+    background: #f0c665;
+    border-color: #f0c665;
+  }
+
+  button:disabled{
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  footer{
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--text-faint);
+    line-height: 1.7;
+  }
+  footer b{ color: var(--text-dim); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
     <div>
-        <label class="block text-xs text-slate-400 mb-1">회사명</label>
-        <input type="text" name="company" placeholder="예: OO소프트" required 
-            class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+      <h1>랜덤워크 시뮬레이터</h1>
+      <p>0에서 시작해 매 걸음 오르내립니다. 한 번 오르면 다음엔 내릴 확률이, 한 번 내리면 다음엔 오를 확률이 살짝 더 높아지는 평균회귀 편향을 걸어 볼 수 있어요.</p>
     </div>
-    
-    <div>
-        <label class="block text-xs text-slate-400 mb-1">이메일 주소</label>
-        <input type="email" name="email" placeholder="대표 또는 담당자 이메일" required 
-            class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+    <div class="readout">
+      STEP <b id="ro-step">0</b> / <span id="ro-total">300</span><br>
+      POS &nbsp;<b id="ro-pos">0.0</b>
     </div>
-    
-    <div>
-        <label class="block text-xs text-slate-400 mb-1">희망 플랜</label>
-        <select name="plan" class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-blue-500">
-            <option value="Pro">Pro 플랜 (월 149,000원 -> 사전예약 69,000원)</option>
-            <option value="Enterprise">Enterprise 플랜 (맞춤형 구축 문의)</option>
-        </select>
+  </header>
+
+  <div class="panel">
+    <div class="scope">
+      <canvas id="chart"></canvas>
     </div>
 
-    <button type="submit" 
-        class="w-full py-3.5 px-6 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition duration-200 shadow-lg shadow-blue-600/30">
-        사전 예약 및 무료 체험 신청하기
-    </button>
-</form>
+    <div class="stats">
+      <div class="stat">
+        <div class="label">최종 위치</div>
+        <div class="value amber" id="s-final">0.0</div>
+      </div>
+      <div class="stat">
+        <div class="label">최고점</div>
+        <div class="value pos" id="s-max">0.0</div>
+      </div>
+      <div class="stat">
+        <div class="label">최저점</div>
+        <div class="value neg" id="s-min">0.0</div>
+      </div>
+      <div class="stat">
+        <div class="label">상승 걸음</div>
+        <div class="value" id="s-up">0%</div>
+      </div>
+      <div class="stat">
+        <div class="label">최장 연속</div>
+        <div class="value" id="s-streak">0</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label>반발 강도 <span class="val" id="v-bias">1.0%</span></label>
+        <input type="range" id="bias" min="0" max="15" step="0.5" value="1">
+      </div>
+      <div class="field">
+        <label>걸음 수 <span class="val" id="v-steps">300</span></label>
+        <input type="range" id="steps" min="50" max="2000" step="10" value="300">
+      </div>
+      <div class="field">
+        <label>재생 속도 <span class="val" id="v-speed">보통</span></label>
+        <input type="range" id="speed" min="1" max="4" step="1" value="2">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="btn-run">한 경로 실행</button>
+      <button id="btn-overlay">50개 경로 겹쳐보기</button>
+      <button id="btn-reset">초기화</button>
+    </div>
+  </div>
+
+  <footer>
+    <b>반발 강도</b>는 직전 걸음과 반대 방향이 나올 확률을 얼마나 더 높일지를 뜻해요. 1.0%면 오른 다음 51% 확률로 내리고, 49% 확률로 다시 오릅니다. 0%로 두면 순수한 50대50 랜덤워크가 됩니다.
+  </footer>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+  const scopeEl = canvas.parentElement;
+
+  const biasInput = document.getElementById('bias');
+  const stepsInput = document.getElementById('steps');
+  const speedInput = document.getElementById('speed');
+  const vBias = document.getElementById('v-bias');
+  const vSteps = document.getElementById('v-steps');
+  const vSpeed = document.getElementById('v-speed');
+
+  const btnRun = document.getElementById('btn-run');
+  const btnOverlay = document.getElementById('btn-overlay');
+  const btnReset = document.getElementById('btn-reset');
+
+  const roStep = document.getElementById('ro-step');
+  const roTotal = document.getElementById('ro-total');
+  const roPos = document.getElementById('ro-pos');
+
+  const sFinal = document.getElementById('s-final');
+  const sMax = document.getElementById('s-max');
+  const sMin = document.getElementById('s-min');
+  const sUp = document.getElementById('s-up');
+  const sStreak = document.getElementById('s-streak');
+
+  const speedLabels = {1:'느림', 2:'보통', 3:'빠름', 4:'매우 빠름'};
+  const speedFrames = {1: 1, 2: 3, 3: 8, 4: 20};
+
+  let dpr = Math.max(window.devicePixelRatio || 1, 1);
+  let cssW = 0, cssH = 0;
+
+  function resizeCanvas(){
+    cssW = scopeEl.clientWidth;
+    cssH = scopeEl.clientHeight;
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(currentPath) draw(currentPath, drawnUpTo, overlayPaths);
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function simulate(steps, biasPct){
+    const bias = biasPct / 100;
+    const pos = [0];
+    const moves = [];
+    let last = 0; // 0 = none, 1 = up, -1 = down
+    for(let i=0;i<steps;i++){
+      let pUp = 0.5;
+      if(last === 1) pUp = 0.5 - bias;
+      else if(last === -1) pUp = 0.5 + bias;
+      pUp = Math.min(Math.max(pUp, 0), 1);
+      const up = Math.random() < pUp;
+      const move = up ? 1 : -1;
+      moves.push(move);
+      pos.push(pos[pos.length-1] + move);
+      last = move;
+    }
+    return { pos, moves };
+  }
+
+  let currentPath = null;
+  let overlayPaths = [];
+  let drawnUpTo = 0;
+  let animId = null;
+  let running = false;
+
+  function setControlsDisabled(disabled){
+    biasInput.disabled = disabled;
+    stepsInput.disabled = disabled;
+    speedInput.disabled = disabled;
+    btnRun.disabled = disabled;
+    btnOverlay.disabled = disabled;
+  }
+
+  function niceBounds(paths){
+    let max = 1, min = -1;
+    paths.forEach(p => {
+      p.pos.forEach(v => { if(v>max)max=v; if(v<min)min=v; });
+    });
+    const pad = Math.max((max-min)*0.12, 1);
+    return { max: max+pad, min: min-pad };
+  }
+
+  function draw(mainPath, upTo, overlays){
+    ctx.clearRect(0,0,cssW,cssH);
+
+    const padL = 46, padR = 16, padT = 16, padB = 24;
+    const plotW = cssW - padL - padR;
+    const plotH = cssH - padT - padB;
+
+    const allPaths = overlays.concat([mainPath]);
+    const { max, min } = niceBounds(allPaths);
+    const totalSteps = mainPath.pos.length - 1;
+
+    const xAt = (i) => padL + (i/totalSteps) * plotW;
+    const yAt = (v) => padT + (1 - (v - min)/(max - min)) * plotH;
+
+    // grid
+    ctx.strokeStyle = '#1E232D';
+    ctx.lineWidth = 1;
+    const gridLines = 5;
+    ctx.font = "10px 'IBM Plex Mono', monospace";
+    ctx.fillStyle = '#545C6C';
+    ctx.textBaseline = 'middle';
+    for(let g=0; g<=gridLines; g++){
+      const v = min + (max-min)*g/gridLines;
+      const y = yAt(v);
+      ctx.beginPath();
+      ctx.moveTo(padL, y+0.5);
+      ctx.lineTo(cssW-padR, y+0.5);
+      ctx.stroke();
+      ctx.fillText(v.toFixed(0), 8, y);
+    }
+
+    // zero line emphasized
+    if(min < 0 && max > 0){
+      ctx.strokeStyle = '#2A3140';
+      ctx.beginPath();
+      const y0 = yAt(0);
+      ctx.moveTo(padL, y0+0.5);
+      ctx.lineTo(cssW-padR, y0+0.5);
+      ctx.stroke();
+    }
+
+    // overlay faint paths (full, no animation)
+    overlays.forEach(p => {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(111,160,216,0.16)';
+      ctx.lineWidth = 1;
+      p.pos.forEach((v,i) => {
+        const x = xAt(i), y = yAt(v);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+    });
+
+    // average path if overlays exist
+    if(overlays.length > 0){
+      const avg = [];
+      for(let i=0;i<=totalSteps;i++){
+        let sum = 0, n = 0;
+        overlays.forEach(p => { if(p.pos[i]!==undefined){ sum+=p.pos[i]; n++; } });
+        if(mainPath.pos[i]!==undefined){ sum += mainPath.pos[i]; n++; }
+        avg.push(sum/n);
+      }
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(111,160,216,0.85)';
+      ctx.lineWidth = 1.6;
+      avg.forEach((v,i) => {
+        const x = xAt(i), y = yAt(v);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+    }
+
+    // main animated path
+    const upToClamped = Math.min(upTo, totalSteps);
+    ctx.beginPath();
+    ctx.strokeStyle = '#E8B84B';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = 'rgba(232,184,75,0.55)';
+    ctx.shadowBlur = 6;
+    for(let i=0;i<=upToClamped;i++){
+      const x = xAt(i), y = yAt(mainPath.pos[i]);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // leading dot
+    if(upToClamped >= 0){
+      const x = xAt(upToClamped), y = yAt(mainPath.pos[upToClamped]);
+      ctx.beginPath();
+      ctx.fillStyle = '#E8B84B';
+      ctx.arc(x, y, 3.2, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function updateStats(mainPath, upTo){
+    const upToClamped = Math.min(upTo, mainPath.pos.length-1);
+    const slice = mainPath.pos.slice(0, upToClamped+1);
+    const movesSlice = mainPath.moves.slice(0, upToClamped);
+
+    const finalV = slice[slice.length-1];
+    const maxV = Math.max(...slice);
+    const minV = Math.min(...slice);
+    const upCount = movesSlice.filter(m=>m===1).length;
+    const upPct = movesSlice.length ? Math.round((upCount/movesSlice.length)*100) : 0;
+
+    let longest = 0, cur = 0, curDir = 0;
+    movesSlice.forEach(m => {
+      if(m === curDir){ cur++; } else { curDir = m; cur = 1; }
+      if(cur > longest) longest = cur;
+    });
+
+    roStep.textContent = upToClamped;
+    roPos.textContent = finalV.toFixed(1);
+    sFinal.textContent = finalV.toFixed(1);
+    sFinal.className = 'value ' + (finalV > 0 ? 'pos' : finalV < 0 ? 'neg' : 'amber');
+    sMax.textContent = maxV.toFixed(1);
+    sMin.textContent = minV.toFixed(1);
+    sUp.textContent = upPct + '%';
+    sStreak.textContent = longest;
+  }
+
+  function animate(){
+    const framesPerTick = speedFrames[speedInput.value];
+    let frameCount = 0;
+
+    function tick(){
+      frameCount++;
+      if(frameCount % 1 === 0){
+        drawnUpTo += framesPerTick >= 1 ? Math.ceil(framesPerTick/2)+1 : 1;
+      }
+      if(drawnUpTo >= currentPath.pos.length-1){
+        drawnUpTo = currentPath.pos.length-1;
+        draw(currentPath, drawnUpTo, overlayPaths);
+        updateStats(currentPath, drawnUpTo);
+        running = false;
+        setControlsDisabled(false);
+        return;
+      }
+      draw(currentPath, drawnUpTo, overlayPaths);
+      updateStats(currentPath, drawnUpTo);
+      animId = requestAnimationFrame(tick);
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function runSingle(){
+    if(running) return;
+    cancelAnimationFrame(animId);
+    const steps = parseInt(stepsInput.value, 10);
+    const bias = parseFloat(biasInput.value);
+    currentPath = simulate(steps, bias);
+    overlayPaths = [];
+    drawnUpTo = 0;
+    running = true;
+    setControlsDisabled(true);
+    roTotal.textContent = steps;
+    animate();
+  }
+
+  function runOverlay(){
+    if(running) return;
+    cancelAnimationFrame(animId);
+    const steps = parseInt(stepsInput.value, 10);
+    const bias = parseFloat(biasInput.value);
+
+    overlayPaths = [];
+    for(let i=0;i<49;i++){
+      overlayPaths.push(simulate(steps, bias));
+    }
+    currentPath = simulate(steps, bias);
+    drawnUpTo = 0;
+    running = true;
+    setControlsDisabled(true);
+    roTotal.textContent = steps;
+    animate();
+  }
+
+  function reset(){
+    cancelAnimationFrame(animId);
+    running = false;
+    setControlsDisabled(false);
+    const steps = parseInt(stepsInput.value, 10);
+    currentPath = { pos: [0], moves: [] };
+    overlayPaths = [];
+    drawnUpTo = 0;
+    roTotal.textContent = steps;
+    roStep.textContent = '0';
+    roPos.textContent = '0.0';
+    sFinal.textContent = '0.0';
+    sFinal.className = 'value amber';
+    sMax.textContent = '0.0';
+    sMin.textContent = '0.0';
+    sUp.textContent = '0%';
+    sStreak.textContent = '0';
+    draw(currentPath, 0, []);
+  }
+
+  biasInput.addEventListener('input', () => {
+    vBias.textContent = parseFloat(biasInput.value).toFixed(1) + '%';
+  });
+  stepsInput.addEventListener('input', () => {
+    vSteps.textContent = stepsInput.value;
+    roTotal.textContent = stepsInput.value;
+  });
+  speedInput.addEventListener('input', () => {
+    vSpeed.textContent = speedLabels[speedInput.value];
+  });
+
+  btnRun.addEventListener('click', runSingle);
+  btnOverlay.addEventListener('click', runOverlay);
+  btnReset.addEventListener('click', reset);
+
+  // init
+  resizeCanvas();
+  reset();
+})();
+</script>
+
+</body>
+</html>
