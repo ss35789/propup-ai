@@ -104,6 +104,30 @@
     background: #090B0F;
   }
 
+  .chart-actions{
+    position:absolute;
+    top:10px;
+    right:10px;
+    z-index:10;
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .chart-actions button{
+    font-size:12px;
+    padding:7px 10px;
+    border-radius:7px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background:rgba(20,23,31,0.88);
+  }
+
+  .chart-actions button.primary{
+    background:rgba(232,184,75,0.95);
+  }
+
   canvas{
     display:block;
     width: 100%;
@@ -160,6 +184,18 @@
   @media (max-width: 640px){
     .controls{ grid-template-columns: 1fr; }
     .stats{ gap: 20px; }
+
+    .chart-actions{
+      top:7px;
+      right:7px;
+      gap:4px;
+      max-width:calc(100% - 14px);
+    }
+
+    .chart-actions button{
+      font-size:11px;
+      padding:6px 8px;
+    }
   }
 
   .field label{
@@ -269,6 +305,12 @@
   <div class="panel">
     <div class="scope">
       <canvas id="chart"></canvas>
+
+      <div class="chart-actions">
+        <button class="primary" id="btn-run">한 경로 실행</button>
+        <button id="btn-overlay">50개 경로 겹쳐보기</button>
+        <button id="btn-reset">초기화</button>
+      </div>
     </div>
 
     <div class="stats">
@@ -307,12 +349,6 @@
         <label>재생 속도 <span class="val" id="v-speed">보통</span></label>
         <input type="range" id="speed" min="1" max="4" step="1" value="2">
       </div>
-    </div>
-
-    <div class="actions">
-      <button class="primary" id="btn-run">한 경로 실행</button>
-      <button id="btn-overlay">50개 경로 겹쳐보기</button>
-      <button id="btn-reset">초기화</button>
     </div>
   </div>
 
