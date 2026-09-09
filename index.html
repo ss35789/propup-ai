@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>주가 예측 시뮬레이터</title>
+<title>주식 시뮬레이터</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -19,19 +19,24 @@
     --text-faint: #545C6C;
     --amber: #E8B84B;
     --amber-dim: #7A6430;
-    --hist: #7FA8D9;
+    --blue: #6FA0D8;
+    --blue-dim: #3A4E68;
     --up: #7FB88A;
     --down: #C97B6B;
     --radius: 14px;
   }
+
   *{ box-sizing: border-box; }
+
   html, body{
-    margin:0; padding:0;
+    margin:0;
+    padding:0;
     background: var(--bg);
     color: var(--text);
     font-family: 'IBM Plex Sans KR', sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+
   body{
     min-height: 100vh;
     display:flex;
@@ -39,202 +44,315 @@
     padding: 48px 20px 64px;
     background-image:
       radial-gradient(circle at 18% 8%, rgba(232,184,75,0.05), transparent 45%),
-      radial-gradient(circle at 82% 92%, rgba(127,168,217,0.05), transparent 45%);
+      radial-gradient(circle at 82% 92%, rgba(111,160,216,0.05), transparent 45%);
   }
-  .wrap{ width: 100%; max-width: 920px; }
-  header{ margin-bottom: 22px; }
-  h1{ font-size: 26px; font-weight: 600; margin: 0 0 8px; letter-spacing: -0.01em; }
-  header p{ margin:0; color: var(--text-dim); font-size: 13.5px; line-height: 1.65; max-width: 62ch; }
 
-  .warn{
-    margin-top: 14px;
-    padding: 11px 14px;
-    border: 1px solid var(--grid-strong);
-    border-left: 3px solid var(--amber);
-    border-radius: 6px;
-    background: rgba(232,184,75,0.05);
-    font-size: 12.5px;
-    color: var(--text-dim);
-    line-height: 1.6;
+  .wrap{
+    width: 100%;
+    max-width: 900px;
   }
-  .warn b{ color: var(--amber); font-weight: 500; }
+
+  header{
+    margin-bottom: 28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  h1{
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  header p{
+    margin:0;
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 46ch;
+  }
+
+  .readout{
+    font-family: 'IBM Plex Mono', monospace;
+    text-align: right;
+    font-size: 12px;
+    color: var(--text-faint);
+    line-height: 1.8;
+  }
+  .readout b{
+    color: var(--amber);
+    font-weight: 500;
+    font-size: 13px;
+  }
 
   .panel{
-    margin-top: 22px;
     background: linear-gradient(180deg, var(--panel), var(--panel-2));
     border: 1px solid var(--grid-strong);
     border-radius: var(--radius);
     padding: 22px;
   }
 
-  .inputrow{
-    display:flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: stretch;
-  }
-  .inputrow input[type="text"]{
-    flex: 1 1 200px;
-    background: var(--panel-2);
-    border: 1px solid var(--grid-strong);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px;
-    letter-spacing: 0.03em;
-    padding: 12px 14px;
-    border-radius: 8px;
-    outline: none;
-    text-transform: uppercase;
-  }
-  .inputrow input[type="text"]::placeholder{ color: var(--text-faint); text-transform: none; }
-  .inputrow input[type="text"]:focus{ border-color: var(--amber); }
-
-  select{
-    background: var(--panel-2);
-    border: 1px solid var(--grid-strong);
-    color: var(--text);
-    font-family: 'IBM Plex Sans KR', sans-serif;
-    font-size: 13.5px;
-    padding: 12px 12px;
-    border-radius: 8px;
-    outline: none;
-  }
-
-  button{
-    font-family: 'IBM Plex Sans KR', sans-serif;
-    font-size: 13.5px;
-    font-weight: 500;
-    padding: 12px 20px;
-    border-radius: 8px;
-    border: 1px solid var(--amber);
-    background: var(--amber);
-    color: #1A1305;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-  button:hover{ background: #f0c665; }
-  button:disabled{ opacity: 0.5; cursor: default; }
-
-  .status{
-    margin-top: 10px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--text-faint);
-    min-height: 16px;
-  }
-  .status.err{ color: var(--down); }
-  .status.demo{ color: var(--amber); }
-
   .scope{
-    margin-top: 18px;
     position: relative;
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid var(--grid);
     background: #090B0F;
   }
-  canvas{ display:block; width: 100%; height: 380px; }
+
+  canvas{
+    display:block;
+    width: 100%;
+    height: 360px;
+  }
+
   .scope::after{
     content:"";
-    position:absolute; inset:0; pointer-events:none;
-    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.012), rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.012),
+      rgba(255,255,255,0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    );
   }
-
-  .legend{
-    display:flex; gap:18px; flex-wrap:wrap;
-    padding: 12px 4px 0;
-    font-size: 11.5px;
-    color: var(--text-dim);
-    font-family: 'IBM Plex Mono', monospace;
-  }
-  .legend span{ display:flex; align-items:center; gap:6px; }
-  .swatch{ width:12px; height:2px; display:inline-block; }
 
   .stats{
-    display:flex; gap: 26px; flex-wrap: wrap;
-    padding: 18px 4px 4px;
+    display:flex;
+    gap: 28px;
+    padding: 14px 4px 4px;
+    flex-wrap: wrap;
     font-family: 'IBM Plex Mono', monospace;
   }
-  .stat{ display:flex; flex-direction:column; gap:3px; }
-  .stat .label{ font-size: 10.5px; color: var(--text-faint); }
-  .stat .value{ font-size: 17px; color: var(--text); }
+
+  .stat{
+    display:flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .stat .label{
+    font-size: 10.5px;
+    color: var(--text-faint);
+    letter-spacing: 0.02em;
+  }
+  .stat .value{
+    font-size: 17px;
+    color: var(--text);
+  }
   .stat .value.pos{ color: var(--up); }
   .stat .value.neg{ color: var(--down); }
   .stat .value.amber{ color: var(--amber); }
 
+  .controls{
+    margin-top: 22px;
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px 28px;
+  }
+
+  @media (max-width: 640px){
+    .controls{ grid-template-columns: 1fr; }
+    .stats{ gap: 20px; }
+  }
+
+  .field label{
+    display:flex;
+    justify-content:space-between;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .field label span.val{
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--amber);
+  }
+
+  input[type="range"]{
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--grid-strong);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: 2px solid #0A0C10;
+    box-shadow: 0 0 0 1px var(--amber-dim);
+    cursor: pointer;
+    margin-top: -6px;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: 2px solid #0A0C10;
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-track{
+    height: 2px;
+    background: var(--grid-strong);
+  }
+
+  .actions{
+    margin-top: 24px;
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  button{
+    font-family: 'IBM Plex Sans KR', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 11px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--grid-strong);
+    background: var(--panel-2);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  button:hover{ border-color: var(--text-faint); }
+  button:active{ transform: translateY(1px); }
+
+  button.primary{
+    background: var(--amber);
+    border-color: var(--amber);
+    color: #1A1305;
+  }
+  button.primary:hover{
+    background: #f0c665;
+    border-color: #f0c665;
+  }
+
+  button:disabled{
+    opacity: 0.45;
+    cursor: default;
+  }
+
   footer{
     margin-top: 18px;
-    font-size: 11.5px;
+    font-size: 12px;
     color: var(--text-faint);
     line-height: 1.7;
   }
+  footer b{ color: var(--text-dim); font-weight: 500; }
 </style>
 </head>
 <body>
+
 <div class="wrap">
   <header>
-    <h1>주가 예측 시뮬레이터</h1>
-    <p>종목 코드를 입력하면 최근 시세의 변동성과 추세를 바탕으로 몬테카를로 시뮬레이션을 돌려, 앞으로 있을 수 있는 가격 경로들을 부채꼴로 보여줍니다.</p>
-    <div class="warn">
-      <b>주의:</b> 이 결과는 과거 통계를 이용한 확률적 시뮬레이션일 뿐, 실제 미래 주가를 맞히는 예측이 아닙니다. 투자 판단의 근거로 사용하지 마세요. 저는 투자 자문가가 아닙니다.
+    <div>
+      <h1>주식 시뮬레이터</h1>
+      <p>0에서 시작해 매 걸음 오르내립니다. 한 번 오르면 다음엔 내릴 확률이, 한 번 내리면 다음엔 오를 확률이 살짝 더 높아지는 평균회귀 편향을 걸어 볼 수 있어요.</p>
+    </div>
+    <div class="readout">
+      STEP <b id="ro-step">0</b> / <span id="ro-total">300</span><br>
+      POS &nbsp;<b id="ro-pos">0.0</b>
     </div>
   </header>
 
   <div class="panel">
-    <div class="inputrow">
-      <input type="text" id="ticker" placeholder="예: AAPL, TSLA, 005930 (삼성전자)" value="AAPL">
-      <select id="horizon">
-        <option value="30">30일 전망</option>
-        <option value="90" selected>90일 전망</option>
-        <option value="180">180일 전망</option>
-        <option value="365">1년 전망</option>
-      </select>
-      <button id="btn-run">예측 실행</button>
-    </div>
-    <div class="status" id="status"></div>
-
-    <div class="scope"><canvas id="chart"></canvas></div>
-
-    <div class="legend">
-      <span><span class="swatch" style="background:var(--hist)"></span>실제 과거 시세</span>
-      <span><span class="swatch" style="background:var(--amber)"></span>시뮬레이션 중앙값</span>
-      <span><span class="swatch" style="background:rgba(232,184,75,0.35)"></span>25–75% 구간</span>
-      <span><span class="swatch" style="background:rgba(232,184,75,0.14)"></span>10–90% 구간</span>
+    <div class="scope">
+      <canvas id="chart"></canvas>
     </div>
 
     <div class="stats">
-      <div class="stat"><div class="label">현재가</div><div class="value" id="s-price">–</div></div>
-      <div class="stat"><div class="label">연환산 변동성</div><div class="value amber" id="s-vol">–</div></div>
-      <div class="stat"><div class="label">연환산 추세(추정)</div><div class="value" id="s-drift">–</div></div>
-      <div class="stat"><div class="label">전망 종료 시점 중앙값</div><div class="value" id="s-med">–</div></div>
-      <div class="stat"><div class="label">10–90% 예상 범위</div><div class="value" id="s-range">–</div></div>
+      <div class="stat">
+        <div class="label">최종 위치</div>
+        <div class="value amber" id="s-final">0.0</div>
+      </div>
+      <div class="stat">
+        <div class="label">최고점</div>
+        <div class="value pos" id="s-max">0.0</div>
+      </div>
+      <div class="stat">
+        <div class="label">최저점</div>
+        <div class="value neg" id="s-min">0.0</div>
+      </div>
+      <div class="stat">
+        <div class="label">상승 폭</div>
+        <div class="value" id="s-up">0%</div>
+      </div>
+      <div class="stat">
+        <div class="label">최장 연속</div>
+        <div class="value" id="s-streak">0</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label>반발 강도 <span class="val" id="v-bias">1.0%</span></label>
+        <input type="range" id="bias" min="0" max="15" step="0.5" value="1">
+      </div>
+      <div class="field">
+        <label>일 수 <span class="val" id="v-steps">300</span></label>
+        <input type="range" id="steps" min="50" max="2000" step="10" value="300">
+      </div>
+      <div class="field">
+        <label>재생 속도 <span class="val" id="v-speed">보통</span></label>
+        <input type="range" id="speed" min="1" max="4" step="1" value="2">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="btn-run">한 경로 실행</button>
+      <button id="btn-overlay">50개 경로 겹쳐보기</button>
+      <button id="btn-reset">초기화</button>
     </div>
   </div>
 
   <footer>
-    데이터는 stooq.com의 공개 일별 시세를 CORS 프록시를 통해 불러오며, 접속이 되지 않는 환경에서는 예시로 생성한 가상 시세로 대체해 시뮬레이션 동작 방식만 보여드립니다. 추세·변동성 추정치는 최근 거래일의 통계에서 계산한 값으로, 실제 미래 흐름과 다를 수 있습니다.
+    <b>반발 강도</b>는 직전 흐름과 반대 방향이 나올 확률을 얼마나 더 높일지를 뜻해요. 1.0%면 오른 다음 51% 확률로 내리고, 49% 확률로 다시 오릅니다. 0%로 두면 순수한 50대50 랜덤이 됩니다.
   </footer>
 </div>
 
 <script>
 (function(){
-  const tickerInput = document.getElementById('ticker');
-  const horizonSelect = document.getElementById('horizon');
-  const btnRun = document.getElementById('btn-run');
-  const statusEl = document.getElementById('status');
   const canvas = document.getElementById('chart');
   const ctx = canvas.getContext('2d');
   const scopeEl = canvas.parentElement;
 
-  const sPrice = document.getElementById('s-price');
-  const sVol = document.getElementById('s-vol');
-  const sDrift = document.getElementById('s-drift');
-  const sMed = document.getElementById('s-med');
-  const sRange = document.getElementById('s-range');
+  const biasInput = document.getElementById('bias');
+  const stepsInput = document.getElementById('steps');
+  const speedInput = document.getElementById('speed');
+  const vBias = document.getElementById('v-bias');
+  const vSteps = document.getElementById('v-steps');
+  const vSpeed = document.getElementById('v-speed');
+
+  const btnRun = document.getElementById('btn-run');
+  const btnOverlay = document.getElementById('btn-overlay');
+  const btnReset = document.getElementById('btn-reset');
+
+  const roStep = document.getElementById('ro-step');
+  const roTotal = document.getElementById('ro-total');
+  const roPos = document.getElementById('ro-pos');
+
+  const sFinal = document.getElementById('s-final');
+  const sMax = document.getElementById('s-max');
+  const sMin = document.getElementById('s-min');
+  const sUp = document.getElementById('s-up');
+  const sStreak = document.getElementById('s-streak');
+
+  const speedLabels = {1:'느림', 2:'보통', 3:'빠름', 4:'매우 빠름'};
+  const speedFrames = {1: 1, 2: 3, 3: 8, 4: 20};
 
   let dpr = Math.max(window.devicePixelRatio || 1, 1);
   let cssW = 0, cssH = 0;
-  let lastRender = null;
 
   function resizeCanvas(){
     cssW = scopeEl.clientWidth;
@@ -242,302 +360,271 @@
     canvas.width = cssW * dpr;
     canvas.height = cssH * dpr;
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    if(lastRender) render(lastRender);
+    if(currentPath) draw(currentPath, drawnUpTo, overlayPaths);
   }
   window.addEventListener('resize', resizeCanvas);
 
-  function normalizeSymbol(raw){
-    let s = raw.trim().toLowerCase();
-    if(s.includes('.')) return s;
-    if(/^\d{4,6}$/.test(s)) return s + '.kr';
-    return s + '.us';
-  }
-
-  // stooq.com은 브라우저 fetch에 CORS 헤더를 내려주지 않기 때문에,
-  // 서버 사이드에서 대신 요청해 CORS 헤더를 붙여주는 공개 프록시를 순서대로 시도한다.
-  function buildProxyUrls(targetUrl){
-    const enc = encodeURIComponent(targetUrl);
-    return [
-      // corsproxy.io는 현재 API 키 없이는 401을 반환하므로 제외
-      'https://api.codetabs.com/v1/proxy?quest=' + enc,
-      'https://api.allorigins.win/raw?url=' + enc,
-      'https://thingproxy.freeboard.io/fetch/' + targetUrl
-    ];
-  }
-
-  function parseStooqCsv(text){
-    if(!text || text.startsWith('<') || text.toLowerCase().includes('exceeded')) throw new Error('데이터 없음');
-    const lines = text.trim().split('\n');
-    if(lines.length < 30) throw new Error('데이터 부족');
-    const rows = lines.slice(1).map(l => {
-      const parts = l.split(',');
-      return { date: parts[0], close: parseFloat(parts[4]) };
-    }).filter(r => !isNaN(r.close) && r.close > 0);
-    if(rows.length < 30) throw new Error('데이터 부족');
-    return rows;
-  }
-
-  async function fetchHistory(symbol){
-    const targetUrl = 'https://stooq.com/q/d/l/?s=' + encodeURIComponent(symbol) + '&i=d';
-    const proxyUrls = buildProxyUrls(targetUrl);
-
-    let lastError = new Error('데이터 없음');
-    for(const url of proxyUrls){
-      try{
-        const res = await fetch(url, { mode: 'cors' });
-        if(!res.ok) throw new Error('네트워크 오류 (' + res.status + ')');
-        const text = await res.text();
-        return parseStooqCsv(text);
-      }catch(e){
-        lastError = e;
-        // 이 프록시가 실패하면 다음 프록시로 계속 시도
-      }
+  function simulate(steps, biasPct){
+    const bias = biasPct / 100;
+    const pos = [0];
+    const moves = [];
+    let last = 0; // 0 = none, 1 = up, -1 = down
+    for(let i=0;i<steps;i++){
+      let pUp = 0.5;
+      if(last === 1) pUp = 0.5 - bias;
+      else if(last === -1) pUp = 0.5 + bias;
+      pUp = Math.min(Math.max(pUp, 0), 1);
+      const up = Math.random() < pUp;
+      const move = up ? 1 : -1;
+      moves.push(move);
+      pos.push(pos[pos.length-1] + move);
+      last = move;
     }
-    throw lastError;
+    return { pos, moves };
   }
 
-  function seededRandom(seedStr){
-    let h = 1779033703 ^ seedStr.length;
-    for (let i = 0; i < seedStr.length; i++) {
-      h = Math.imul(h ^ seedStr.charCodeAt(i), 3432918353);
-      h = (h << 13) | (h >>> 19);
-    }
-    return function(){
-      h = Math.imul(h ^ (h >>> 16), 2246822519);
-      h = Math.imul(h ^ (h >>> 13), 3266489917);
-      h ^= h >>> 16;
-      return (h >>> 0) / 4294967296;
-    };
+  let currentPath = null;
+  let overlayPaths = [];
+  let drawnUpTo = 0;
+  let animId = null;
+  let running = false;
+
+  function setControlsDisabled(disabled){
+    biasInput.disabled = disabled;
+    stepsInput.disabled = disabled;
+    speedInput.disabled = disabled;
+    btnRun.disabled = disabled;
+    btnOverlay.disabled = disabled;
   }
 
-  function generateDemoHistory(symbol){
-    const rnd = seededRandom(symbol);
-    const n = 260;
-    const rows = [];
-    let price = 40 + rnd() * 260;
-    const mu = (rnd() - 0.45) * 0.0009;
-    const sigma = 0.012 + rnd() * 0.02;
-    const today = new Date();
-    for(let i=n;i>=0;i--){
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const z = gaussian(rnd);
-      price = price * Math.exp((mu - 0.5*sigma*sigma) + sigma*z);
-      rows.push({ date: d.toISOString().slice(0,10), close: price });
-    }
-    return rows;
+  function niceBounds(paths){
+    let max = 1, min = -1;
+    paths.forEach(p => {
+      p.pos.forEach(v => { if(v>max)max=v; if(v<min)min=v; });
+    });
+    const pad = Math.max((max-min)*0.12, 1);
+    return { max: max+pad, min: min-pad };
   }
 
-  function gaussian(rnd){
-    let u = 0, v = 0;
-    while(u === 0) u = rnd();
-    while(v === 0) v = rnd();
-    return Math.sqrt(-2.0*Math.log(u)) * Math.cos(2.0*Math.PI*v);
-  }
-
-  function computeStats(rows){
-    const closes = rows.map(r => r.close);
-    const rets = [];
-    for(let i=1;i<closes.length;i++){
-      rets.push(Math.log(closes[i]/closes[i-1]));
-    }
-    const n = rets.length;
-    const meanD = rets.reduce((a,b)=>a+b,0)/n;
-    const varD = rets.reduce((a,b)=>a+(b-meanD)*(b-meanD),0)/(n-1);
-    const sigmaD = Math.sqrt(varD);
-    return { meanD, sigmaD, last: closes[closes.length-1] };
-  }
-
-  function simulateForward(S0, muD, sigmaD, horizonDays, numPaths, rnd){
-    const paths = [];
-    for(let p=0;p<numPaths;p++){
-      const path = [S0];
-      let price = S0;
-      for(let t=0;t<horizonDays;t++){
-        const z = gaussian(rnd);
-        price = price * Math.exp((muD - 0.5*sigmaD*sigmaD) + sigmaD*z);
-        path.push(price);
-      }
-      paths.push(path);
-    }
-    return paths;
-  }
-
-  function percentile(arr, p){
-    const sorted = arr.slice().sort((a,b)=>a-b);
-    const idx = (sorted.length-1) * p;
-    const lo = Math.floor(idx), hi = Math.ceil(idx);
-    if(lo === hi) return sorted[lo];
-    return sorted[lo] + (sorted[hi]-sorted[lo]) * (idx-lo);
-  }
-
-  function fmt(v){
-    if(v >= 1000) return v.toLocaleString('en-US', {maximumFractionDigits:0});
-    return v.toFixed(2);
-  }
-
-  function render(state){
-    lastRender = state;
-    const { histRows, horizonDays, bands } = state;
+  function draw(mainPath, upTo, overlays){
     ctx.clearRect(0,0,cssW,cssH);
 
-    const padL = 54, padR = 16, padT = 16, padB = 24;
+    const padL = 46, padR = 16, padT = 16, padB = 24;
     const plotW = cssW - padL - padR;
     const plotH = cssH - padT - padB;
 
-    const histShown = histRows.slice(-150);
-    const totalPoints = histShown.length + horizonDays;
+    const allPaths = overlays.concat([mainPath]);
+    const { max, min } = niceBounds(allPaths);
+    const totalSteps = mainPath.pos.length - 1;
 
-    let allVals = histShown.map(r=>r.close);
-    bands.p10.forEach(v=>allVals.push(v));
-    bands.p90.forEach(v=>allVals.push(v));
-    const max = Math.max(...allVals);
-    const min = Math.min(...allVals);
-    const pad = (max-min)*0.08 || max*0.05;
-    const yMax = max+pad, yMin = min-pad;
-
-    const xAt = (i) => padL + (i/(totalPoints-1)) * plotW;
-    const yAt = (v) => padT + (1 - (v-yMin)/(yMax-yMin)) * plotH;
+    const xAt = (i) => padL + (i/totalSteps) * plotW;
+    const yAt = (v) => padT + (1 - (v - min)/(max - min)) * plotH;
 
     // grid
     ctx.strokeStyle = '#1E232D';
     ctx.lineWidth = 1;
+    const gridLines = 5;
     ctx.font = "10px 'IBM Plex Mono', monospace";
     ctx.fillStyle = '#545C6C';
     ctx.textBaseline = 'middle';
-    for(let g=0; g<=5; g++){
-      const v = yMin + (yMax-yMin)*g/5;
+    for(let g=0; g<=gridLines; g++){
+      const v = min + (max-min)*g/gridLines;
       const y = yAt(v);
       ctx.beginPath();
       ctx.moveTo(padL, y+0.5);
       ctx.lineTo(cssW-padR, y+0.5);
       ctx.stroke();
-      ctx.fillText(fmt(v), 8, y);
+      ctx.fillText(v.toFixed(0), 8, y);
     }
 
-    // divider at "today"
-    const todayIdx = histShown.length - 1;
-    const xToday = xAt(todayIdx);
-    ctx.strokeStyle = '#2A3140';
-    ctx.setLineDash([3,3]);
-    ctx.beginPath();
-    ctx.moveTo(xToday, padT);
-    ctx.lineTo(xToday, cssH-padB);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // bands (10-90, 25-75) as filled areas, offset index by todayIdx
-    function bandPath(lowArr, highArr){
+    // zero line emphasized
+    if(min < 0 && max > 0){
+      ctx.strokeStyle = '#2A3140';
       ctx.beginPath();
-      for(let i=0;i<=horizonDays;i++){
-        const x = xAt(todayIdx+i);
-        const y = yAt(highArr[i]);
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-      }
-      for(let i=horizonDays;i>=0;i--){
-        const x = xAt(todayIdx+i);
-        const y = yAt(lowArr[i]);
-        ctx.lineTo(x,y);
-      }
-      ctx.closePath();
+      const y0 = yAt(0);
+      ctx.moveTo(padL, y0+0.5);
+      ctx.lineTo(cssW-padR, y0+0.5);
+      ctx.stroke();
     }
-    ctx.fillStyle = 'rgba(232,184,75,0.10)';
-    bandPath(bands.p10, bands.p90);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(232,184,75,0.20)';
-    bandPath(bands.p25, bands.p75);
-    ctx.fill();
 
-    // historical line
-    ctx.beginPath();
-    ctx.strokeStyle = '#7FA8D9';
-    ctx.lineWidth = 1.8;
-    histShown.forEach((r,i) => {
-      const x = xAt(i), y = yAt(r.close);
-      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    // overlay faint paths (full, no animation)
+    overlays.forEach(p => {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(111,160,216,0.16)';
+      ctx.lineWidth = 1;
+      p.pos.forEach((v,i) => {
+        const x = xAt(i), y = yAt(v);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
     });
-    ctx.stroke();
 
-    // median forecast line
+    // average path if overlays exist
+    if(overlays.length > 0){
+      const avg = [];
+      for(let i=0;i<=totalSteps;i++){
+        let sum = 0, n = 0;
+        overlays.forEach(p => { if(p.pos[i]!==undefined){ sum+=p.pos[i]; n++; } });
+        if(mainPath.pos[i]!==undefined){ sum += mainPath.pos[i]; n++; }
+        avg.push(sum/n);
+      }
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(111,160,216,0.85)';
+      ctx.lineWidth = 1.6;
+      avg.forEach((v,i) => {
+        const x = xAt(i), y = yAt(v);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+    }
+
+    // main animated path
+    const upToClamped = Math.min(upTo, totalSteps);
     ctx.beginPath();
     ctx.strokeStyle = '#E8B84B';
     ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(232,184,75,0.5)';
-    ctx.shadowBlur = 5;
-    ctx.setLineDash([5,3]);
-    for(let i=0;i<=horizonDays;i++){
-      const x = xAt(todayIdx+i), y = yAt(bands.p50[i]);
+    ctx.shadowColor = 'rgba(232,184,75,0.55)';
+    ctx.shadowBlur = 6;
+    for(let i=0;i<=upToClamped;i++){
+      const x = xAt(i), y = yAt(mainPath.pos[i]);
       if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     }
     ctx.stroke();
-    ctx.setLineDash([]);
     ctx.shadowBlur = 0;
 
-    // dot at today
-    ctx.beginPath();
-    ctx.fillStyle = '#E7E9EE';
-    ctx.arc(xToday, yAt(histShown[todayIdx].close), 2.6, 0, Math.PI*2);
-    ctx.fill();
+    // leading dot
+    if(upToClamped >= 0){
+      const x = xAt(upToClamped), y = yAt(mainPath.pos[upToClamped]);
+      ctx.beginPath();
+      ctx.fillStyle = '#E8B84B';
+      ctx.arc(x, y, 3.2, 0, Math.PI*2);
+      ctx.fill();
+    }
   }
 
-  async function run(){
-    btnRun.disabled = true;
-    statusEl.className = 'status';
-    statusEl.textContent = '데이터 불러오는 중…';
+  function updateStats(mainPath, upTo){
+    const upToClamped = Math.min(upTo, mainPath.pos.length-1);
+    const slice = mainPath.pos.slice(0, upToClamped+1);
+    const movesSlice = mainPath.moves.slice(0, upToClamped);
 
-    const rawTicker = tickerInput.value || 'AAPL';
-    const symbol = normalizeSymbol(rawTicker);
-    const horizonDays = parseInt(horizonSelect.value, 10);
-    let rows, isDemo = false;
+    const finalV = slice[slice.length-1];
+    const maxV = Math.max(...slice);
+    const minV = Math.min(...slice);
+    const upCount = movesSlice.filter(m=>m===1).length;
+    const upPct = movesSlice.length ? Math.round((upCount/movesSlice.length)*100) : 0;
 
-    try{
-      rows = await fetchHistory(symbol);
-      statusEl.className = 'status';
-      statusEl.textContent = symbol.toUpperCase() + ' 실시간 데이터 로드 완료 (' + rows.length + '개 거래일)';
-    }catch(e){
-      rows = generateDemoHistory(symbol);
-      isDemo = true;
-      statusEl.className = 'status demo';
-      statusEl.textContent = '실시간 데이터를 불러오지 못해 예시 데이터로 대체했습니다 (동작 방식 시연용).';
-    }
+    let longest = 0, cur = 0, curDir = 0;
+    movesSlice.forEach(m => {
+      if(m === curDir){ cur++; } else { curDir = m; cur = 1; }
+      if(cur > longest) longest = cur;
+    });
 
-    const { meanD, sigmaD, last } = computeStats(rows);
-    const rnd = seededRandom(symbol + Date.now());
-    const numPaths = 300;
-    const paths = simulateForward(last, meanD, sigmaD, horizonDays, numPaths, rnd);
-
-    const bands = { p10: [], p25: [], p50: [], p75: [], p90: [] };
-    for(let t=0; t<=horizonDays; t++){
-      const vals = paths.map(p => p[t]);
-      bands.p10.push(percentile(vals, 0.10));
-      bands.p25.push(percentile(vals, 0.25));
-      bands.p50.push(percentile(vals, 0.50));
-      bands.p75.push(percentile(vals, 0.75));
-      bands.p90.push(percentile(vals, 0.90));
-    }
-
-    render({ histRows: rows, horizonDays, bands });
-
-    const annualDrift = meanD * 252;
-    const annualVol = sigmaD * Math.sqrt(252);
-    sPrice.textContent = fmt(last);
-    sVol.textContent = (annualVol*100).toFixed(1) + '%';
-    sDrift.textContent = (annualDrift*100 >= 0 ? '+' : '') + (annualDrift*100).toFixed(1) + '%';
-    sDrift.className = 'value ' + (annualDrift >= 0 ? 'pos' : 'neg');
-    const med = bands.p50[bands.p50.length-1];
-    sMed.textContent = fmt(med);
-    sMed.className = 'value amber';
-    sRange.textContent = fmt(bands.p10[bands.p10.length-1]) + ' – ' + fmt(bands.p90[bands.p90.length-1]);
-
-    btnRun.disabled = false;
+    roStep.textContent = upToClamped;
+    roPos.textContent = finalV.toFixed(1);
+    sFinal.textContent = finalV.toFixed(1);
+    sFinal.className = 'value ' + (finalV > 0 ? 'pos' : finalV < 0 ? 'neg' : 'amber');
+    sMax.textContent = maxV.toFixed(1);
+    sMin.textContent = minV.toFixed(1);
+    sUp.textContent = upPct + '%';
+    sStreak.textContent = longest;
   }
 
-  btnRun.addEventListener('click', run);
-  tickerInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') run(); });
+  function animate(){
+    const framesPerTick = speedFrames[speedInput.value];
+    let frameCount = 0;
 
+    function tick(){
+      frameCount++;
+      if(frameCount % 1 === 0){
+        drawnUpTo += framesPerTick >= 1 ? Math.ceil(framesPerTick/2)+1 : 1;
+      }
+      if(drawnUpTo >= currentPath.pos.length-1){
+        drawnUpTo = currentPath.pos.length-1;
+        draw(currentPath, drawnUpTo, overlayPaths);
+        updateStats(currentPath, drawnUpTo);
+        running = false;
+        setControlsDisabled(false);
+        return;
+      }
+      draw(currentPath, drawnUpTo, overlayPaths);
+      updateStats(currentPath, drawnUpTo);
+      animId = requestAnimationFrame(tick);
+    }
+    animId = requestAnimationFrame(tick);
+  }
+
+  function runSingle(){
+    if(running) return;
+    cancelAnimationFrame(animId);
+    const steps = parseInt(stepsInput.value, 10);
+    const bias = parseFloat(biasInput.value);
+    currentPath = simulate(steps, bias);
+    overlayPaths = [];
+    drawnUpTo = 0;
+    running = true;
+    setControlsDisabled(true);
+    roTotal.textContent = steps;
+    animate();
+  }
+
+  function runOverlay(){
+    if(running) return;
+    cancelAnimationFrame(animId);
+    const steps = parseInt(stepsInput.value, 10);
+    const bias = parseFloat(biasInput.value);
+
+    overlayPaths = [];
+    for(let i=0;i<49;i++){
+      overlayPaths.push(simulate(steps, bias));
+    }
+    currentPath = simulate(steps, bias);
+    drawnUpTo = 0;
+    running = true;
+    setControlsDisabled(true);
+    roTotal.textContent = steps;
+    animate();
+  }
+
+  function reset(){
+    cancelAnimationFrame(animId);
+    running = false;
+    setControlsDisabled(false);
+    const steps = parseInt(stepsInput.value, 10);
+    currentPath = { pos: [0], moves: [] };
+    overlayPaths = [];
+    drawnUpTo = 0;
+    roTotal.textContent = steps;
+    roStep.textContent = '0';
+    roPos.textContent = '0.0';
+    sFinal.textContent = '0.0';
+    sFinal.className = 'value amber';
+    sMax.textContent = '0.0';
+    sMin.textContent = '0.0';
+    sUp.textContent = '0%';
+    sStreak.textContent = '0';
+    draw(currentPath, 0, []);
+  }
+
+  biasInput.addEventListener('input', () => {
+    vBias.textContent = parseFloat(biasInput.value).toFixed(1) + '%';
+  });
+  stepsInput.addEventListener('input', () => {
+    vSteps.textContent = stepsInput.value;
+    roTotal.textContent = stepsInput.value;
+  });
+  speedInput.addEventListener('input', () => {
+    vSpeed.textContent = speedLabels[speedInput.value];
+  });
+
+  btnRun.addEventListener('click', runSingle);
+  btnOverlay.addEventListener('click', runOverlay);
+  btnReset.addEventListener('click', reset);
+
+  // init
   resizeCanvas();
-  run();
+  reset();
 })();
 </script>
+
 </body>
 </html>
